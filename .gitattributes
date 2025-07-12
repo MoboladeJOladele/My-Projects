@@ -1,0 +1,9 @@
+# Treat .c and .h files as C code
+*.c linguist-language=C
+*.h linguist-language=C
+
+# Treat .py as Python code
+*.py linguist-language=Python
+
+# Force GitHub to detect all files
+** linguist-detectable=true
