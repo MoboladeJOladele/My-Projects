@@ -1,122 +1,133 @@
-# `arlen`: Array Length Calculator in C
+#  `arlen`: Array Length Calculator in C
 
-`arlen` is a simple yet powerful function for **determining the number of elements in an array** in C. It works with a variety of types, including:
+`arlen` is a flexible function for **determining the number of elements in arrays and strings** in C.  
+It works with:
 
-- `int`
-- `float`
-- `double`
-- `char`
-- `long`
-- Strings (`char[]` and `char*[]`)
+- `int[]`
+- `long[]`
+- `float[]`
+- `double[]`
+- Strings → `char*` (e.g., `"Hello"`)
+- String sets → `char*[]` (e.g., `{"Yes", "No"}`)
 
->  **IMPORTANT:** Always pass the `sizeof(array)` as the second argument when using `arlen`.
-
----
-
-## How It WORKS
-
-The `arlen` function uses a **generic selector "_Generic"** to determine the datatype to be passed into arlen. It then uses that information, along with the size of the array (passed as a parameter to the function) to calculate its length accordingly. It is ideal for measuring **ALL** the elements in an array.
-Although it's extremely effective, the function has one limitation which we'll discuss later
-```c
-int arlen(type array, int array_size);  **For clarity, I used `type` to represent the datatype(s); it's not the exact keyword used in the actual code.**
-
-```
-
-> **NOTE:** Currently, there is no standard header file for `arlen`. To use it, **copy the function definition into your `.c` file.**
+> 📝 **Note:** Always pass `sizeof(array)` as the second argument to arlen().
 
 ---
 
-## Key Notes and Behavior
+##  How It Works
 
-### arlen Works With
+The `arlen` function uses C's **`_Generic`** keyword to select the correct function depending on the array's type. It then uses the element size to compute the count:
 
-* Primitive arrays like:
+```c
+#define arlen(array, size) _Generic((array), \
+    int*: arlen_ints, \
+    long*: arlen_longs, \
+    float*: arlen_floats, \
+    double*: arlen_doubles, \
+    char*: arlen_string, \
+    char**: arlen_string_set \
+)(array, size)
+```
 
-  ```c
-  int arr[] = {1, 2, 3};
-  ```
+Internally, the calculation is based on:
 
-* String arrays like:
+```c
+size / sizeof(array[0])
+---
 
-  ```c
-  char *org[] = {"Github", "Youtube", "Google", "Meta"};
-  ```
+## 📌 arlen Works With
+
+### ✅ Numeric Arrays
+
+```c
+int num[] = {12, 13, 26, 0, 1, 1};
+arlen(num, sizeof(num)); // → 6
+```
+
+Same applies for `long[]`, `float[]`, and `double[]`.
 
 ---
 
-### Special Case for `char[]`
-
-If you're measuring the length of a `char[]`, such as:
+### ✅ Single String (`char*`)
 
 ```c
-char name[] = "Joseph";
+char *text = "hello, world!";
+arlen(text, sizeof(text)); // → 12
 ```
 
-`arlen` will **include the NULL terminator** (`'\0'`), resulting in a count of **7**, not 6.
+This counts the **visible characters only** — `arlen_string` does **not** include the null terminator (`'\0'`).
 
-```c
-printf("%i\n", arlen(name, sizeof(name))); // Output: 7
-```
+> It’s equivalent to `strlen()`, but built into the `arlen` system.
 
 ---
 
-### Limitations with `char*[]`
-
-When you pass a **string array of pointers**, such as:
+### ✅ String Sets (`char*[]`)
 
 ```c
-char *org[] = {"Github", "Youtube", "Google", "Meta"};
+char *set[] = {"yes", "no", "maybe"};
+arlen(set, sizeof(set)); // → 3
 ```
 
-`arlen(org, sizeof(org))` will return `4` – the number of strings (pointers to `char[]`) in the array.
-
-However, to get the length of a specific string (e.g., `"Google"`), you need to use `strlen()`:
-
-```c
-printf("%lu\n", strlen(org[2])); // Output: 6 (not 7, as '\0' is not included)
-```
-
-> **Reminder:** `strlen()` returns the number of useful characters, **excluding** the NULL terminator.
+Counts how many strings are in the array.
 
 ---
 
-## Practical Examples
+### 🧪 String Inside a String Set
+
+```c
+arlen(set[2], sizeof(set[2])); // → 5 ("maybe")
+```
+
+> The correct handler (`char*`) is selected, returning the  visible character count (like `strlen()`).
+
+---
+
+## 🧪 Example Program
 
 ```c
 #include <stdio.h>
-#include <string.h>
 
-// Assume arlen is defined above or included
+int main(void)
+{
+    char *string = "hello, world!";
+    char *string_set[] = {"yes", "no", "maybe"};
+    int num[] = {12, 13, 26,  0,  1, 1};
 
-int main() {
-    char *org[] = {"Github", "Youtube", "Google", "Meta"};
+    printf("Length of string: %i\n", arlen(string, sizeof(string)));
+    printf("Length of string set: %i\n", arlen(string_set, sizeof(string_set)));
+    printf("Length of number array: %i\n", arlen(num, sizeof(num)));
 
-    for (int i = 0, n = arlen(org, sizeof(org)); i < n; i++) {
-        printf("Word: %s\n", org[i]);
-
-        printf("Length: %lu characters (excluding NULL terminator)\n", strlen(org[i]));
-    }
-
-    return 0;
+    // Length of an element in the string set
+    printf("\nLength of Element: %i\n", arlen(string_set[2], sizeof(string_set[2])));
 }
 ```
 
 ---
 
-## In Summary
+## ⚠️ Limitation
 
-* `arlen` helps to compute the number of elements in most C arrays.
-* Always pass the `sizeof(array)` as the second parameter.
-* Use `strlen()` to count characters in string elements, excluding the NULL character.
-* Combine `arlen()` and `strlen()` for powerful string array iteration.
+`arlen` uses `sizeof(array)`, which only works reliably for **statically declared arrays**. It **cannot** calculate lengths of:
+
+- Arrays passed as function parameters
+- Dynamically allocated arrays (`malloc`, etc.)
+
+This is a **general limitation of C**, not `arlen` specifically.
+
+---
+
+## ✅ Summary
+
+- `arlen` supports arrays of most primitive types.
+- Handles both `char*` (strings) and `char*[]` (array of strings).
+- `arlen(char*, size)` counts **only visible characters**, like `strlen()`.
+- You must always pass `sizeof(array)` correctly.
+- Not intended for dynamically allocated memory or parameters.
 
 ---
 
 ## 🙏 Thanks & Happy Coding!
 
-Feel free to copy and tweak `arlen` for your personal or project use.  
+Feel free to copy and tweak `arlen` in your own C projects.  
 A dedicated header file may be released in the future.
 
----
-
-> Powered by the Holy Spirit 🔥🔥
+> Powered by the Holy Spirit 🔥
