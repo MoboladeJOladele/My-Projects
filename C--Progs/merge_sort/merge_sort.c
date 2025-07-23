@@ -1,14 +1,15 @@
-#include <cs50.h>
+#include <code.h>
+#include <stdbool.h>
 #include <stdio.h>
 
-int merge_sort(int list[], int length);
+void merge_sort(int array[], int size);
 
 int main(void)
 {
-    int numbers[] = {4, 6, 2, 8, 9, 1, 3, 5, 0, 7};
-    int length = sizeof(numbers) / sizeof(numbers[0]);
-    merge_sort(numbers, length);
+    int numbers[] = {4, 5, 2, 9, 9, 1, 3, 5, 0};
+    merge_sort(numbers, sizeof(numbers));
 
+    int length = arlen(numbers, sizeof(numbers));
     for (int i = 0; i < length; i++)
     {
         printf("%i", numbers[i]);
@@ -17,143 +18,83 @@ int main(void)
     return 0;
 }
 
-int merge_sort(int list[], int length)
+void merge_sort(int array[], int size)
 {
-    if (length > 1)
+    int length = arlen(array, size);
+    if (length <= 1)
     {
-        // Get the length of the left and right halfs
-        int len_left = length / 2;
-        int len_right = length - len_left;
+        return;
+    }
+    // Get the length of the left and right half
+    int l_length = length / 2;
+    int r_length = length - l_length;
 
-        // Create arrays to store the two halves of the list
-        int left_half[len_left], right_half[len_right];
+    // Create arrays to store the two halves of the list
+    int left_half[l_length], right_half[r_length];
 
-        // Make the left half
-        for (int l = 0; l < len_left; l++)
-        {
-            left_half[l] = list[l];
-        }
-
-        // Make the right half
-        for (int r = 0; r < len_right; r++)
-        {
-            right_half[r] = list[(len_left + r)];
-        }
-        merge_sort(left_half, len_left);
-        merge_sort(right_half, len_right);
-
-        // SORT AND MERGE.
-        int l = 0, r = 0;
-
-        for (int next = 0; next < length; next++)
-        {
-            // If the elements in the left half have finished.
-            if (l == len_left && r < len_right)
-            {
-                int rem = len_right - r;
-
-                // If the digits left in the right half are more than one
-                if (rem > 1)
-                {
-                    if (right_half[r] < right_half[r + 1])
-                    {
-                        list[next] = right_half[r];
-                        r++;
-                    }
-
-                    else if (right_half[r] > right_half[r + 1])
-                    {
-                        list[next] = right_half[r + 1];
-                        r++;
-                    }
-
-                    // IF
-                    // the two elements are equal
-                    else
-                    {
-                        list[next] = right_half[r];
-                        list[next + 1] = right_half[r + 1];
-                        next++, r += 2;
-                    }
-                }
-
-                // THEN,
-                // capture the last digit.
-                else
-                {
-                    list[next] = right_half[r];
-                }
-            }
-
-
-            // ELSE
-            // if the elements in the right half have finished
-            else if(l < len_left && r == len_right)
-            {
-                int rem = len_left - l;
-
-                // If there remains more than one digit in the left half
-                if (rem > 1)
-                {
-                    if (left_half[l] < left_half[l + 1])
-                    {
-                        list[next] = left_half[l];
-                        l++;
-                    }
-
-                    else if (left_half[l] > left_half[l + 1])
-                    {
-                        list[next] = left_half[l + 1];
-                        l++;
-                    }
-
-                    // IF
-                    // the two elements are equal
-                    else
-                    {
-                        list[next] = left_half[l];
-                        list[next + 1] = left_half[l + 1];
-                        next++, l += 2;
-                    }
-                }
-
-                // THEN,
-                // capture the last digit.
-                else
-                {
-                    list[next] = left_half[l];
-                }
-            }
-
-            // ELSE
-            // if both halves still have elements
-            else
-            {
-                if (left_half[l] < right_half[r])
-                {
-                    list[next] = left_half[l];
-                    l++;
-                }
-
-                else if (left_half[l] > right_half[r])
-                {
-                    list[next] = right_half[r];
-                    r++;
-                }
-
-                // IF
-                // the two elements are equal
-                else
-                {
-                    list[next] = left_half[l];
-                    list[next + 1] = right_half[r];
-                    next++, l++, r++;
-                }
-            }
-        }
-
-        return 0;
+    // Make the left half
+    for (int l = 0; l < l_length; l++)
+    {
+        left_half[l] = array[l];
     }
 
-    return 12;
+    // Make the right half
+    for (int r = 0; r < r_length; r++)
+    {
+        right_half[r] = array[(l_length + r)];
+    }
+    merge_sort(left_half, sizeof(left_half));
+    merge_sort(right_half, sizeof(right_half));
+
+    // SORT AND MERGE.
+    int left = 0, right = 0;
+    bool skip = false;
+    for (int index = 0; index < length; index++)
+    {
+        if (skip)
+        {
+            skip = false;
+            continue;
+        }
+
+        // If the elements in the left half have finished.
+        if (left == l_length && right < r_length)
+        {
+            array[index] = right_half[right];
+            right++;
+        }
+
+        // If the elements in the right half have finished
+        else if (left < l_length && right == r_length)
+        {
+            array[index] = left_half[left];
+            left++;
+        }
+
+        // ELSE
+        // if both halves still have elements
+        else if (left < l_length && right < r_length)
+        {
+            if (left_half[left] < right_half[right])
+            {
+                array[index] = left_half[left];
+                left++;
+            }
+
+            else if (left_half[left] > right_half[right])
+            {
+                array[index] = right_half[right];
+                right++;
+            }
+
+            // If the two elements are equal
+            else
+            {
+                array[index] = left_half[left];
+                array[index + 1] = right_half[right];
+                left++, right++;
+                skip = true;
+            }
+        }
+    }
 }
