@@ -52,7 +52,7 @@ Same applies for `long[]`, `float[]`, and `double[]`.
 
 ```c
 char *text = "hello, world!";
-arlen(text, sizeof(text)); // → 12
+arlen(text, sizeof(text)); // → 13
 ```
 
 This counts the **visible characters only** — `arlen_string` does **not** include the null terminator (`'\0'`).

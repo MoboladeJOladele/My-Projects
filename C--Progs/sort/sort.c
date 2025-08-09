@@ -1,9 +1,9 @@
-#include <code.h>
 #include <ctype.h>
 #include <stdbool.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include "strings.c"
 
 void sort_chars_ascending(char *array, int length);
 void sort_strings_ascending(char* array[], int length);
@@ -369,32 +369,3 @@ selector(char*, sort_strings)
     char*: sort_chars, \
     char**: sort_strings \
 )(array, format, size)
-
-
-int main(void)
-{
-    char letters[] = {'g', 'f', 'b', 'c', 'e', 'd', 'a'};
-    char* strings[] = {"Jasmine", "jasmine", "JAMES", "Oli", "Adam"};
-
-    sort(letters, "ascending", sizeof(letters));
-    for (int i = 0, n = arlen(letters, sizeof(letters)); i < n; i++)
-    {
-        printf("'%c'", letters[i]);
-        if (i < (n -1))
-        {
-            printf(", ");
-        }
-    }
-    printf("\n");
-
-    sort(strings, "ascending", sizeof(strings));
-    for (int j = 0, n = arlen(strings,  sizeof(strings)); j < n; j++)
-    {
-        printf("%s", strings[j]);
-        if (j < (n -1))
-        {
-            printf(", ");
-        }
-    }
-    printf("\n");
-}
